@@ -1,20 +1,20 @@
 ## ClassDef LogLevel
-**LogLevel**: LogLevel 的功能是定义日志级别的枚举类型。
+**LogLevel**: Die Funktion von LogLevel ist die Definition eines Aufzählungstyps für Protokollierungsstufen.
 
-**attributes**: 该类的属性包括：
-· DEBUG: 表示调试信息的日志级别。
-· INFO: 表示一般信息的日志级别。
-· WARNING: 表示警告信息的日志级别。
-· ERROR: 表示错误信息的日志级别。
-· CRITICAL: 表示严重错误信息的日志级别。
+**attributes**: Die Attribute dieser Klasse umfassen:
+· DEBUG: Stellt die Protokollierungsebene für Debug-Informationen dar.
+· INFO: Stellt die Protokollierungsebene für allgemeine Informationen dar.
+· WARNING: Stellt die Protokollierungsebene für Warnmeldungen dar.
+· ERROR: Stellt die Protokollierungsebene für Fehlermeldungen dar.
+· CRITICAL: Stellt die Protokollierungsebene für kritische Fehlermeldungen dar.
 
-**Code Description**: LogLevel 类继承自 StrEnum，定义了一组常量，用于表示不同的日志级别。这些日志级别包括 DEBUG、INFO、WARNING、ERROR 和 CRITICAL，分别对应不同的日志记录重要性。使用枚举类型的好处在于，它提供了一种清晰且类型安全的方式来处理日志级别，避免了使用字符串常量可能带来的错误。
+**Code Description**: Die Klasse LogLevel erbt von StrEnum und definiert eine Reihe von Konstanten, die verschiedene Protokollierungsstufen repräsentieren. Diese Protokollierungsstufen umfassen DEBUG, INFO, WARNING, ERROR und CRITICAL, die jeweils unterschiedliche Wichtigkeitsgrade der Protokollierung darstellen. Der Vorteil der Verwendung eines Aufzählungstyps besteht darin, dass er eine klare und typsichere Möglichkeit bietet, mit Protokollierungsstufen umzugehen, was Fehler vermeidet, die bei der Verwendung von String-Konstanten auftreten könnten.
 
-在项目中，LogLevel 类被 ProjectSettings 类引用，作为 log_level 属性的类型。ProjectSettings 类是一个配置类，负责管理项目的设置，其中 log_level 属性默认设置为 LogLevel.INFO。这意味着在没有特别指定的情况下，项目的日志级别将为信息级别。
+Im Projekt wird die LogLevel-Klasse von der ProjectSettings-Klasse als Typ für das Attribut log_level referenziert. Die ProjectSettings-Klasse ist eine Konfigurationsklasse, die für die Verwaltung der Projekteinstellungen verantwortlich ist, wobei das Attribut log_level standardmäßig auf LogLevel.INFO gesetzt ist. Dies bedeutet, dass die Protokollierungsebene des Projekts auf Informationsebene liegt, sofern nicht anders angegeben.
 
-此外，ProjectSettings 类中的 set_log_level 方法用于验证和设置日志级别。该方法会将输入的字符串转换为大写，并检查其是否为有效的日志级别。如果输入的值不在 LogLevel 的定义范围内，将会抛出一个 ValueError 异常。这确保了在项目中使用的日志级别始终是有效且一致的。
+Darüber hinaus wird in der ProjectSettings-Klasse die Methode set_log_level zur Überprüfung und Einstellung der Protokollierungsebene verwendet. Diese Methode wandelt die eingegebene Zeichenfolge in Großbuchstaben um und prüft, ob es sich um eine gültige Protokollierungsebene handelt. Wenn der eingegebene Wert nicht im Definitionsbereich von LogLevel liegt, wird eine ValueError-Ausnahme ausgelöst. Dadurch wird sichergestellt, dass in dem Projekt verwendete Protokollierungsstufen immer gültig und konsistent sind.
 
-**Note**: 使用 LogLevel 时，请确保所使用的日志级别是预定义的常量之一，以避免运行时错误。在设置日志级别时，建议使用大写字母输入，以符合枚举的定义。
+**Hinweis**: Stellen Sie bei der Verwendung von LogLevel sicher, dass die verwendete Protokollierungsebene eine der vordefinierten Konstanten ist, um Laufzeitfehler zu vermeiden. Bei der Einstellung der Protokollierungsebene wird empfohlen, Großbuchstaben zu verwenden, um der Aufzählungsdefinition zu entsprechen.
 ## ClassDef ProjectSettings
 **ProjectSettings**: The function of ProjectSettings is to manage the configuration settings for the project.
 
@@ -35,7 +35,7 @@ Similarly, the `set_log_level` method validates the log level input, converting 
 
 The ProjectSettings class is referenced by the Setting class, which aggregates various settings for the project, including ProjectSettings and ChatCompletionSettings. This hierarchical structure allows for organized management of project configurations, where ProjectSettings plays a crucial role in defining the core settings that govern the behavior of the application.
 
-**Note**: When using the ProjectSettings class, ensure that the values assigned to attributes like language and log_level are valid to avoid runtime errors. It is recommended to use the predefined constants for log levels and valid ISO codes for languages to maintain consistency and reliability in the project's configuration.
+**Hinweis**: Stellen Sie bei der Verwendung der ProjectSettings-Klasse sicher, dass die Werte, die Attributen wie language und log_level zugewiesen werden, gültig sind, um Laufzeitfehler zu vermeiden. Es wird empfohlen, die vordefinierten Konstanten für Protokollierungsebenen und gültige ISO-Codes für Sprachen zu verwenden, um die Konsistenz und Zuverlässigkeit der Projektkonfiguration zu gewährleisten.
 
 **Output Example**: An instance of ProjectSettings might look like this:
 ```
@@ -55,11 +55,11 @@ ProjectSettings(
 **parameters**: 该函数的参数。
 · v: 字符串类型，表示待验证的语言代码或语言名称。
 
-**Code Description**: validate_language_code是一个类方法，用于验证输入的语言代码或语言名称是否有效。该方法接受一个字符串参数v，表示用户输入的语言代码或名称。函数内部使用Language.match(v)来尝试匹配输入的语言。如果匹配成功，将返回对应的语言名称。如果输入的语言代码或名称无效，则会引发LanguageNotFoundError异常，进而抛出一个ValueError，提示用户输入有效的ISO 639代码或语言名称。
+**Code Description**: validate_language_code ist eine Klassenmethode, die überprüft, ob der eingegebene Sprachcode oder Sprachname gültig ist. Die Methode akzeptiert einen String-Parameter v, der den vom Benutzer eingegebenen Sprachcode oder -namen darstellt. Innerhalb der Funktion wird Language.match(v) verwendet, um die eingegebene Sprache abzugleichen. Wenn die Übereinstimmung erfolgreich ist, wird der entsprechende Sprachname zurückgegeben. Wenn der eingegebene Sprachcode oder -name ungültig ist, wird eine LanguageNotFoundError-Ausnahme ausgelöst, die in eine ValueError-Ausnahme umgewandelt wird, um den Benutzer aufzufordern, einen gültigen ISO 639-Code oder Sprachnamen einzugeben.
 
-该函数的主要目的是确保用户输入的语言信息是有效的，并提供相应的反馈，以便用户能够纠正输入错误。
+Der Hauptzweck dieser Funktion besteht darin, sicherzustellen, dass die vom Benutzer eingegebenen Sprachinformationen gültig sind, und entsprechendes Feedback zu geben, damit der Benutzer etwaige Eingabefehler korrigieren kann.
 
-**Note**: 使用该函数时，请确保传入的参数是字符串类型，并且符合ISO 639标准或已知的语言名称。若输入无效，函数将抛出异常，需在调用时做好异常处理。
+**Hinweis**: Stellen Sie bei der Verwendung dieser Funktion sicher, dass der übergebene Parameter ein String ist und dem ISO 639-Standard oder einem bekannten Sprachnamen entspricht. Bei ungültiger Eingabe löst die Funktion eine Ausnahme aus, die beim Aufruf entsprechend behandelt werden sollte.
 
 **Output Example**: 假设输入参数为"en"，函数将返回"English"。如果输入参数为"invalid_code"，则将抛出ValueError，提示"Invalid language input. Please enter a valid ISO 639 code or language name."
 ***
@@ -181,25 +181,6 @@ In the context of the project, the ChatCompletionSettings class is instantiated 
 The `validate_model` method is a class method that verifies if a given model name is part of the set of valid model names. This function accepts a single parameter, `value`, which is expected to be a string representing the model name.
 
 1. **Validation Process**:  
-   The function calls the `get_valid_models` method from the `MaxInputTokens` class. This method returns a list of valid model names, which includes the aliases of the models defined in the `MaxInputTokens` class. 
-
-2. **Comparison**:  
-   The provided `value` (the model name to be validated) is then checked to see if it exists within the list of valid models. If the model name is not found, the function raises a `ValueError`, indicating that the provided model is invalid and listing the valid options.
-
-3. **Return**:  
-   If the model name is valid (i.e., it exists in the list of valid models), the function returns the same model name (`value`).
-
-The `validate_model` function is used primarily to ensure that only models which are defined as valid in the system are accepted for further processing. By calling the `MaxInputTokens.get_valid_models()` method, the function directly leverages the list of predefined models to perform this check.
-
-**Note**:  
-- It is important to ensure that the `MaxInputTokens.get_valid_models()` method correctly returns the list of valid model names, including any aliases or variations. If the model name provided to `validate_model` does not match a valid entry, a `ValueError` will be raised, which could interrupt the workflow.
-- This function expects the model names to be exactly as defined in the valid models list, and does not perform any automatic corrections or formatting on the input value.
-
-**Output Example**:  
-For a valid input model name "gpt-4o", assuming this model is present in the valid models list returned by `MaxInputTokens.get_valid_models()`, the function would simply return "gpt-4o".
-
-In the case of an invalid model name like "gpt-5", the function would raise an exception:
-```
 ValueError: Invalid model 'gpt-5'. Must be one of ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini'].
 ```
 ***
