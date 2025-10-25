@@ -100,7 +100,8 @@ class TestChangeDetector(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # 清理测试仓库
-        cls.repo.close()
+        if Repo is not None and hasattr(cls, "repo"):
+            cls.repo.close()
         os.system('rm -rf ' + cls.test_repo_path)
 
 if __name__ == '__main__':
