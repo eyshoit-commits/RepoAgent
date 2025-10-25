@@ -1,0 +1,46 @@
+presets:
+  llama3:
+    provider: ollama
+    model: llama3
+    parameters:
+      temperature: 0.4
+      top_p: 0.9
+  chatglm3:
+    provider: openai-compatible
+    model: chatglm3-6b
+    parameters:
+      temperature: 0.6
+  qwen1_5:
+    provider: openai-compatible
+    model: qwen1.5-14b-chat
+    parameters:
+      temperature: 0.5
+  glm4:
+    provider: openai-compatible
+    model: glm-4-9b-chat
+    parameters:
+      temperature: 0.55
+  qwen3_0_6b:
+    provider: ollama
+    model: qwen3:0.6b
+    parameters:
+      temperature: 0.2
+      top_p: 0.8
+  tinyllama_q8_chat:
+    provider: llmserver-rs
+    model: tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+    parameters:
+      max_new_tokens: 512
+      temperature: 0.3
+
+local_servers:
+  ollama:
+    provider: ollama
+    base_url: http://ollama:11434
+  openai_compatible:
+    provider: openai-compatible
+    base_url: https://llm-gateway.internal:9443
+    api_key_env: SPOOKY_OPENAI_KEY
+  llmserver_rs:
+    provider: llmserver-rs
+    base_url: http://llmserver:27121

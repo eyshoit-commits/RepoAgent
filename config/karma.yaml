@@ -1,0 +1,7 @@
+default_role: novice
+thresholds:
+  novice: 0
+  contributor: 40
+  specialist: 100
+storage:
+  path: ../var/karma_state.json

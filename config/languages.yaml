@@ -1,0 +1,23 @@
+- id: python
+  name: Python 3.11
+  build: pip install -r requirements.txt
+  run: python -m spooky.examples.hello_world
+  verify: pytest
+
+- id: java
+  name: Java 21
+  build: mvn -q -DskipTests package
+  run: java -jar target/app.jar
+  verify: mvn -q test
+
+- id: c
+  name: GCC 13 (C)
+  build: gcc -O2 -Wall -Wextra -o bin/app src/main.c
+  run: ./bin/app
+  verify: ./bin/app --self-test
+
+- id: cpp
+  name: Clang 16 (C++)
+  build: cmake -S . -B build && cmake --build build -j
+  run: ./build/app
+  verify: ctest --test-dir build
