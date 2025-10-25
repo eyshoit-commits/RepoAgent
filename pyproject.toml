@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=65.5", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spooky"
+version = "0.1.0"
+description = "Modular orchestration for documentation and local/remote LLM workflows"
+readme = "README.md"
+authors = [{name = "Spooky Maintainers"}]
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.12",
+    "pyyaml>=6.0",
+    "pydantic>=2.6",
+    "requests>=2.32"
+]
+
+[project.scripts]
+spooky-cli = "spooky.cli:app"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
