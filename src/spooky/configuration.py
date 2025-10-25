@@ -1,43 +1,26 @@
 """Configuration loading utilities."""
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
 
-
-@dataclass
-class LanguageConfig:
-    id: str
-    name: str
-    build: str
-    run: str
-    verify: str
-
-
-@dataclass
-class ModelPreset:
-    name: str
-    provider: str
-    model: str
-    parameters: Dict[str, Any]
-
-
-@dataclass
-class LocalServer:
-    provider: str
-    base_url: str
-    api_key_env: str | None = None
+from .config_models import KarmaConfig, LanguageConfig, LocalServer, ModelPreset
 
 
 class ConfigLoader:
     """Load language and model metadata from YAML manifests."""
 
-    def __init__(self, languages_path: Path | None = None, models_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        languages_path: Path | None = None,
+        models_path: Path | None = None,
+        karma_path: Path | None = None,
+    ) -> None:
         self.languages_path = languages_path or Path("config/languages.yaml")
         self.models_path = models_path or Path("config/models.yaml")
+        self.karma_path = karma_path or Path("config/karma.yaml")
 
     def load_languages(self) -> List[LanguageConfig]:
         entries = self._load_yaml(self.languages_path) or []
@@ -71,6 +54,33 @@ class ConfigLoader:
             )
             for name, spec in servers.items()
         }
+
+    def load_karma_config(self) -> KarmaConfig:
+        data = self._load_yaml(self.karma_path) or {}
+
+        raw_thresholds = data.get("thresholds", {})
+        if not raw_thresholds:
+            raise ValueError("karma configuration must define at least one threshold")
+
+        default_role = data.get("default_role")
+        normalized_thresholds = {str(role): int(value) for role, value in raw_thresholds.items()}
+
+        if default_role is None:
+            default_role = min(normalized_thresholds, key=lambda role: normalized_thresholds[role])
+        if default_role not in normalized_thresholds:
+            raise ValueError("default_role must reference a defined threshold")
+
+        storage_spec = data.get("storage", {})
+        storage_path_value = storage_spec.get("path", "var/karma_state.json")
+        storage_path = Path(storage_path_value)
+        if not storage_path.is_absolute():
+            storage_path = (self.karma_path.parent / storage_path).resolve()
+
+        return KarmaConfig(
+            thresholds=normalized_thresholds,
+            default_role=str(default_role),
+            storage_path=storage_path,
+        )
 
     @staticmethod
     def _load_yaml(path: Path) -> Any:

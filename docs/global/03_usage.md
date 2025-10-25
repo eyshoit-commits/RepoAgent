@@ -24,3 +24,11 @@
    ```bash
    spooky-cli ping-local --server ollama
    ```
+
+5. Manage member karma and trigger automatic promotions:
+
+   ```bash
+   spooky-cli karma award alice --points 10
+   spooky-cli karma status alice
+   spooky-cli karma leaderboard --limit 5
+   ```

@@ -10,8 +10,11 @@ import typer
 from .configuration import ConfigLoader
 from .documentation.generator import DocumentationGenerator
 from .llm import LocalModelError, build_client
+from .karma import KarmaManager
 
 app = typer.Typer(help="Utilities for the Spooky orchestration platform.")
+karma_app = typer.Typer(help="Manage the karma system and specialist promotions.")
+app.add_typer(karma_app, name="karma")
 
 
 @app.command("generate-readme")
@@ -87,6 +90,73 @@ def ping_local(
         raise typer.Exit(code=1) from exc
 
     typer.echo(f"Connection successful: {metadata}")
+
+
+def _build_karma_manager(config_path: Path) -> KarmaManager:
+    try:
+        loader = ConfigLoader(karma_path=config_path)
+        config = loader.load_karma_config()
+    except FileNotFoundError as exc:
+        raise typer.BadParameter(str(exc))
+    except ValueError as exc:
+        raise typer.BadParameter(f"Invalid karma configuration: {exc}")
+
+    return KarmaManager(config=config)
+
+
+@karma_app.command("award")
+def karma_award(
+    username: str = typer.Argument(..., help="Identifier of the member to award."),
+    points: int = typer.Option(..., "--points", "-p", help="Number of karma points to grant."),
+    config_path: Path = typer.Option(
+        Path("config/karma.yaml"), help="Path to the karma configuration file."
+    ),
+) -> None:
+    """Award karma to a user and announce their role."""
+
+    manager = _build_karma_manager(config_path)
+    profile = manager.award(username=username, points=points)
+    typer.echo(
+        f"{profile.username} now has {profile.karma} karma and holds the '{profile.role}' role."
+    )
+
+
+@karma_app.command("status")
+def karma_status(
+    username: str = typer.Argument(..., help="Identifier of the member to inspect."),
+    config_path: Path = typer.Option(
+        Path("config/karma.yaml"), help="Path to the karma configuration file."
+    ),
+) -> None:
+    """Display the current karma and role for a user."""
+
+    manager = _build_karma_manager(config_path)
+    profile = manager.get_profile(username=username)
+    typer.echo(
+        f"{profile.username} has {profile.karma} karma and holds the '{profile.role}' role."
+    )
+
+
+@karma_app.command("leaderboard")
+def karma_leaderboard(
+    limit: int = typer.Option(10, help="Number of top profiles to display."),
+    config_path: Path = typer.Option(
+        Path("config/karma.yaml"), help="Path to the karma configuration file."
+    ),
+) -> None:
+    """Show the highest-ranked karma holders."""
+
+    manager = _build_karma_manager(config_path)
+    profiles = manager.list_profiles()[: max(0, limit)]
+
+    if not profiles:
+        typer.echo("No karma profiles recorded yet.")
+        raise typer.Exit(code=0)
+
+    for index, profile in enumerate(profiles, start=1):
+        typer.echo(
+            f"{index}. {profile.username} — {profile.karma} karma ({profile.role})"
+        )
 
 
 if __name__ == "__main__":
