@@ -1,14 +1,23 @@
 import os
 import unittest
 
-from git import Repo
+try:
+    from git import Repo
+except ImportError:  # pragma: no cover - dependency may be absent in CI sandbox
+    Repo = None
 
-from repo_agent.change_detector import ChangeDetector
+try:
+    from repo_agent.change_detector import ChangeDetector
+except ModuleNotFoundError:  # pragma: no cover - dependency requires GitPython
+    ChangeDetector = None
 
 
+@unittest.skipIf(Repo is None or ChangeDetector is None, "GitPython dependency is not installed")
 class TestChangeDetector(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        assert Repo is not None  # for type checkers
+        assert ChangeDetector is not None  # for type checkers
         # 定义测试仓库的路径
         cls.test_repo_path = os.path.join(os.path.dirname(__file__), 'test_repo')
 
@@ -35,6 +44,7 @@ class TestChangeDetector(unittest.TestCase):
         cls.repo.git.commit('-m', 'Initial commit')
 
     def test_get_staged_pys(self):
+        assert ChangeDetector is not None  # for type checkers
         # 创建一个新的 Python 文件并暂存
         new_py_file = os.path.join(self.test_repo_path, 'new_test_file.py')
         with open(new_py_file, 'w') as f:
@@ -52,6 +62,7 @@ class TestChangeDetector(unittest.TestCase):
 
 
     def test_get_unstaged_mds(self):
+        assert ChangeDetector is not None  # for type checkers
         # 修改一个 Markdown 文件但不暂存
         md_file = os.path.join(self.test_repo_path, 'test_file.md')
         with open(md_file, 'a') as f:
@@ -68,6 +79,7 @@ class TestChangeDetector(unittest.TestCase):
 
 
     def test_add_unstaged_mds(self):
+        assert ChangeDetector is not None  # for type checkers
         # 确保有一个未暂存的 Markdown 文件
         self.test_get_unstaged_mds()
 

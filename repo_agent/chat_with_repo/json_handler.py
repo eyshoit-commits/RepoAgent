@@ -17,6 +17,28 @@ class JsonFileProcessor:
             logger.exception(f"File not found: {self.file_path}")
             sys.exit(1)
 
+    def extract_md_contents(self):
+        """Return all Markdown snippets contained in the JSON file."""
+
+        data = self.read_json_file()
+        md_contents = []
+
+        def _collect(node):
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    if key == "md_content":
+                        if isinstance(value, list):
+                            md_contents.extend(str(item) for item in value if item)
+                        elif value:
+                            md_contents.append(str(value))
+                    _collect(value)
+            elif isinstance(node, list):
+                for item in node:
+                    _collect(item)
+
+        _collect(data)
+        return md_contents
+
     def extract_data(self):
         # Load JSON data from a file
         json_data = self.read_json_file()
@@ -84,6 +106,39 @@ class JsonFileProcessor:
             return "Invalid JSON file."
         except Exception as e:
             return f"An error occurred: {e}"
+
+    def search_in_json_nested(self, file_path, search_text):
+        """Return the first matching dictionary with the requested name."""
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            logger.exception("File not found during nested search: %s", file_path)
+            raise
+        except json.JSONDecodeError as exc:
+            logger.exception("Invalid JSON while searching: %s", file_path)
+            raise ValueError("Invalid JSON file") from exc
+
+        def _search(node):
+            if isinstance(node, dict):
+                if node.get("name") == search_text:
+                    return node
+                for value in node.values():
+                    result = _search(value)
+                    if result is not None:
+                        return result
+            elif isinstance(node, list):
+                for item in node:
+                    result = _search(item)
+                    if result is not None:
+                        return result
+            return None
+
+        result = _search(data)
+        if result is None:
+            raise ValueError(f"'{search_text}' not found in JSON")
+        return result
 
 
 if __name__ == "__main__":
