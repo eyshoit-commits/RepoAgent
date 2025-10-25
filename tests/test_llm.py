@@ -2,7 +2,13 @@ from typing import Any, Dict
 
 import pytest
 
-from spooky.llm.local import LlmServerRsClient, LocalModelError, build_client
+from spooky.llm.local import (
+    LlmServerRsClient,
+    LocalModelError,
+    OllamaClient,
+    OpenAICompatibleClient,
+    build_client,
+)
 
 
 class _Response:
@@ -52,6 +58,49 @@ def test_llmserver_rs_ping_error(monkeypatch: pytest.MonkeyPatch) -> None:
         client.ping()
 
 
+def test_openai_compatible_client_uses_authorization_header(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: Dict[str, Any] = {}
+
+    def fake_get(url: str, *, timeout: float, headers: Dict[str, str] | None = None, error_message: str) -> _Response:
+        captured["url"] = url
+        captured["timeout"] = timeout
+        captured["headers"] = headers or {}
+        return _Response({"data": [{"id": "glm-4"}]})
+
+    monkeypatch.setattr("spooky.llm.local._http_get", fake_get)
+
+    client = OpenAICompatibleClient("https://llm-gateway.internal:9443", api_key="top-secret", timeout=5.0)
+    metadata = client.ping()
+
+    assert captured["url"] == "https://llm-gateway.internal:9443/v1/models"
+    assert captured["timeout"] == 5.0
+    assert captured["headers"].get("Authorization") == "Bearer top-secret"
+    assert metadata["provider"] == "openai-compatible"
+    assert "glm-4" in metadata["models"]
+
+
+def test_ollama_client_lists_tags(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_get(url: str, *, timeout: float, headers: Dict[str, str] | None = None, error_message: str) -> _Response:
+        assert url == "http://ollama:11434/api/tags"
+        return _Response({"models": [{"name": "qwen3:0.6b"}, {"name": "llama3"}]})
+
+    monkeypatch.setattr("spooky.llm.local._http_get", fake_get)
+
+    client = OllamaClient("http://ollama:11434")
+    metadata = client.ping()
+
+    assert metadata["provider"] == "ollama"
+    assert "qwen3:0.6b" in metadata["models"]
+
+
 def test_build_client_supports_llmserver() -> None:
     client = build_client("llmserver-rs", "http://llmserver:27121")
     assert isinstance(client, LlmServerRsClient)
+
+
+def test_build_client_supports_openai(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("spooky.llm.local._http_get", lambda *args, **kwargs: _Response({"data": []}))
+
+    client = build_client("openai-compatible", "https://llm-gateway.internal:9443", api_key="token")
+    assert isinstance(client, OpenAICompatibleClient)
+    assert client.base_url == "https://llm-gateway.internal:9443"

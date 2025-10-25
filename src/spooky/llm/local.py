@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import abc
 import json
-from dataclasses import dataclass
 from typing import Any, Dict, Optional
 from urllib import error as urllib_error
 from urllib import request as urllib_request
@@ -91,11 +90,12 @@ class OllamaClient(BaseLocalModelClient):
         return {"provider": "ollama", "models": ", ".join(tags)}
 
 
-@dataclass
 class OpenAICompatibleClient(BaseLocalModelClient):
     """Client for OpenAI-compatible HTTP APIs."""
 
-    api_key: Optional[str] = None
+    def __init__(self, base_url: str, api_key: Optional[str] = None, timeout: float = 10.0) -> None:
+        super().__init__(base_url=base_url, timeout=timeout)
+        self.api_key = api_key
 
     def ping(self) -> Dict[str, str]:  # noqa: D401 - short description inherited
         headers = {"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
