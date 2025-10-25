@@ -13,7 +13,7 @@ The platform is intentionally modular:
 - **Language adapters** – declarative metadata in `config/languages.yaml` describes how to compile or
   execute workloads across Python, Java, C, C++, and other ecosystems.
 - **Model providers** – connectors in `src/spooky/llm` expose a shared protocol for local runtimes such as
-  Ollama or HTTP-compatible OpenAI deployments, and for remote managed services.
+  Ollama, `llmserver-rs`, or HTTP-compatible OpenAI deployments, and for remote managed services.
 
 The modules communicate through lightweight configuration files serialized with YAML, enabling hot-swappable
 components without code changes.
@@ -39,10 +39,12 @@ components without code changes.
    spooky-cli list-models
    ```
 
-4. Test connectivity with a local Ollama or OpenAI-compatible deployment:
+4. Test connectivity with the bundled local runtimes. The command accepts any server alias
+   from `config/models.yaml` and verifies that the health and model metadata endpoints respond:
 
    ```bash
-   spooky-cli ping-local --server ollama
+   spooky-cli ping-local --server ollama        # Ollama with Qwen3:0.6b pulled automatically
+   spooky-cli ping-local --server llmserver_rs  # Rust llmserver-rs serving TinyLlama
    ```
 
 5. Manage member karma and trigger automatic promotions:
@@ -57,7 +59,9 @@ components without code changes.
 
 # Deployment
 
-Run the bundled Docker Compose stack to launch the CLI container together with an Ollama sidecar:
+Run the bundled Docker Compose stack to launch the CLI container together with two local-model
+sidecars: `ollama` for Qwen3:0.6b inference and `llmserver` for TinyLlama served via
+[`llmserver-rs`](https://github.com/eyshoit-commits/llmserver-rs/):
 
 ```bash
 docker compose up --build
@@ -65,7 +69,10 @@ docker compose up --build
 
 The `spooky` service executes `spooky-cli generate-readme` on startup, ensuring documentation remains
 consistent. The Ollama container exposes its HTTP interface on port `11434` with a baked-in health check,
-which the CLI can probe via `spooky-cli ping-local --server ollama`.
+which the CLI can probe via `spooky-cli ping-local --server ollama`. The Rust `llmserver` sidecar listens
+on port `27121` and automatically downloads the
+[`TinyLlama-1.1B-Chat-v1.0.Q8_0.gguf`](https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF)
+weights on first boot so the bundled `tinyllama_q8_chat` preset can be exercised locally.
 
 ## Karma System
 
@@ -120,9 +127,12 @@ The CLI surfaces this metadata so you can plug it into CI/CD pipelines or develo
 Spooky abstracts local large-language-model runtimes by exposing a shared HTTP transport contract. Out of the box
 it supports:
 
-- **Ollama** via the REST API served on port `11434`.
+- **Ollama** via the REST API served on port `11434`, with a ready-to-use Qwen3:0.6b preset.
 - **OpenAI-compatible servers** (e.g., FastChat, vLLM, LM Studio) with token-based authentication.
-- **Model presets** for Llama, ChatGLM, Qwen, and GLM4 families through declarative YAML definitions.
+- **llmserver-rs**, a lightweight Rust microservice that streams GGUF models such as TinyLlama at
+  `http://llmserver:27121`.
+- **Model presets** for Llama, ChatGLM, Qwen, GLM4, and TinyLlama families through declarative YAML definitions.
 
 The CLI can ping an endpoint, ensuring the runtime is online before dispatching work. New providers can be added by
-implementing the `BaseLocalModelClient` protocol in `src/spooky/llm/local.py`.
+implementing the `BaseLocalModelClient` protocol in `src/spooky/llm/local.py`, while configuration lives in
+`config/models.yaml` so that runtimes remain hot-swappable.

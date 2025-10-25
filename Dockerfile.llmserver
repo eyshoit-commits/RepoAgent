@@ -1,0 +1,29 @@
+FROM rust:1.75-bullseye as builder
+
+WORKDIR /workspace
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git pkg-config libssl-dev cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/eyshoit-commits/llmserver-rs.git .
+RUN cargo build --release
+
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /workspace/target/release/llmserver /usr/local/bin/llmserver
+COPY docker/llmserver-entrypoint.sh /usr/local/bin/llmserver-entrypoint.sh
+RUN chmod +x /usr/local/bin/llmserver-entrypoint.sh
+
+ENV MODEL_URL=https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+ENV MODEL_PATH=/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+ENV LLMSERVER_PORT=27121
+ENV LLMSERVER_HOST=0.0.0.0
+
+VOLUME ["/models"]
+EXPOSE 27121
+
+ENTRYPOINT ["/usr/local/bin/llmserver-entrypoint.sh"]

@@ -12,10 +12,13 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+      llmserver:
+        condition: service_healthy
 
   ollama:
     image: ollama/ollama:latest
     restart: unless-stopped
+    command: ["/bin/sh", "-c", "set -e; ollama serve & pid=$!; sleep 5; ollama pull qwen3:0.6b; wait $pid"]
     ports:
       - "11434:11434"
     healthcheck:
@@ -26,6 +29,27 @@ services:
     volumes:
       - ollama-models:/root/.ollama
 
+  llmserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.llmserver
+    restart: unless-stopped
+    environment:
+      - MODEL_URL=${LLMSERVER_MODEL_URL:-https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q8_0.gguf}
+      - MODEL_PATH=${LLMSERVER_MODEL_PATH:-/models/tinyllama-1.1b-chat-v1.0.Q8_0.gguf}
+      - LLMSERVER_PORT=${LLMSERVER_PORT:-27121}
+    ports:
+      - "27121:27121"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:27121/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - llmserver-models:/models
+
 volumes:
   ollama-models:
+    driver: local
+  llmserver-models:
     driver: local

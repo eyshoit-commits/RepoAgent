@@ -20,6 +20,18 @@ presets:
     model: glm-4-9b-chat
     parameters:
       temperature: 0.55
+  qwen3_0_6b:
+    provider: ollama
+    model: qwen3:0.6b
+    parameters:
+      temperature: 0.2
+      top_p: 0.8
+  tinyllama_q8_chat:
+    provider: llmserver-rs
+    model: tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+    parameters:
+      max_new_tokens: 512
+      temperature: 0.3
 
 local_servers:
   ollama:
@@ -29,3 +41,6 @@ local_servers:
     provider: openai-compatible
     base_url: https://llm-gateway.internal:9443
     api_key_env: SPOOKY_OPENAI_KEY
+  llmserver_rs:
+    provider: llmserver-rs
+    base_url: http://llmserver:27121

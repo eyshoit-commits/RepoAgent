@@ -19,10 +19,12 @@
    spooky-cli list-models
    ```
 
-4. Test connectivity with a local Ollama or OpenAI-compatible deployment:
+4. Test connectivity with the bundled local runtimes. The command accepts any server alias
+   from `config/models.yaml` and verifies that the health and model metadata endpoints respond:
 
    ```bash
-   spooky-cli ping-local --server ollama
+   spooky-cli ping-local --server ollama        # Ollama with Qwen3:0.6b pulled automatically
+   spooky-cli ping-local --server llmserver_rs  # Rust llmserver-rs serving TinyLlama
    ```
 
 5. Manage member karma and trigger automatic promotions:
